@@ -96,7 +96,7 @@
         </q-layout-drawer>
 
         <q-page-container>
-            <Chart :medidas="medidas" />
+            <Chart :medidas="medidas" :endpoint="endpoint" />
         </q-page-container>
 
         <q-layout-footer>
@@ -156,7 +156,8 @@ export default {
                 cosechada: true,
                 produccion: true,
                 rinde: true,
-            }
+            },
+            endpoint: '/',
         }
     },
     mounted() {
@@ -182,24 +183,18 @@ export default {
 
             this.filtros.provincia = null;
 
-            console.log('REGION', this.filtros.region);
+            this.endpoint = this.filtros.region ? '/region/'+this.filtros.region.id : '/';
         },
         filtrarProvincia(provincia) {
             this.filtros.provincia = provincia;
 
             this.filtros.region = null;
-
-            console.log('PROVINCIA', this.filtros.provincia);
         },
         filtrarCultivo(cultivo) {
             this.filtros.cultivo = cultivo;
-
-            console.log('CULTIVO', this.filtros.cultivo);
         },
         filtrarDecada(decada) {
             this.filtros.decada = decada;
-
-            console.log('DECADA', this.filtros.decada);
         },
     }
 }

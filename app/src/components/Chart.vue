@@ -1,6 +1,6 @@
 <template>
     <q-page class="flex flex-center">
-        <highcharts :options="chartOptions" ref="chart" />
+        <highcharts :options="chartOptions" />
     </q-page>
 </template>
 
@@ -13,7 +13,7 @@ import axios from 'axios'
 
 export default {
     name: 'Chart',
-    props: ['medidas'],
+    props: ['medidas', 'endpoint'],
     data() {
         return {
             chartSeries: {
@@ -24,9 +24,12 @@ export default {
                 sembradaCosechada: this.medidas.sembradaCosechada,
             },
             chartOptions: {
-                colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce',
-    '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a', '#4572A7', '#AA4643', '#89A54E', '#80699B', '#3D96AE',
-   '#DB843D', '#92A8CD', '#A47D7C', '#B5CA92'],
+                colors: [
+                    '#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5',
+                    '#c42525', '#a6c96a', '#4572a7', '#aa4643', '#89a54e', '#80699b', '#3d96ae', '#db843d',
+                    '#92a8cd', '#a47d7c', '#b5ca92', '#2b908f', '#90ee7e', '#f45b5b', '#7798bf', '#aaeeee',
+                    '#ff0066', '#eeaaee', '#55bf3b', '#df5353', '#8085e9', '#8d4654', '#7cb5ec', '#f7a35c',
+                ],
                 credits: {
                     enabled: false
                 },
@@ -49,11 +52,8 @@ export default {
                     }
                 },
                 legend: {
-                    // enabled: false,
                     align: 'right',
-                    // x: -30,
                     verticalAlign: 'top',
-                    // y: 25,
                     floating: false,
                     backgroundColor: 'white',
                     borderColor: '#CCC',
@@ -76,27 +76,17 @@ export default {
             }
         }
     },
+    watch: {
+        endpoint: function (newValue) {
+            console.log('new endpoint', newValue);
+            this.loadChart();
+        },
+    },
     mounted() {
         window.addEventListener('resize', this.handleResize);
         this.handleResize();
 
-        axios
-            .get('http://localhost')
-            .then(response => {
-                var jsonResponse = JSON.parse(JSON.stringify(response.data));
-                this.chartOptions.xAxis.categories = response.data.x;
-
-                for (let serie of response.data.haSembradas) {
-                    this.chartSeries.haSembradas.push(JSON.parse(JSON.stringify(serie)));
-                }
-
-                for (let serie of response.data.haCosechadas) {
-                    this.chartSeries.haCosechadas.push(JSON.parse(JSON.stringify(serie)));
-                }
-
-                this.updateChart();
-            })
-        ;
+        this.loadChart();
 
         var vue = this;
         window.setInterval( function () {
@@ -117,6 +107,28 @@ export default {
                 v.chartOptions.chart.width  = v.$el.offsetWidth;
                 v.chartOptions.chart.height = v.$el.offsetHeight;
             }, 500);
+        },
+        loadChart() {
+            axios
+                .get('http://localhost'+this.endpoint)
+                .then(response => {
+                    var jsonResponse = JSON.parse(JSON.stringify(response.data));
+                    this.chartOptions.xAxis.categories = response.data.x;
+
+                    this.chartSeries.haSembradas  = [];
+                    this.chartSeries.haCosechadas = [];
+
+                    for (let serie of response.data.haSembradas) {
+                        this.chartSeries.haSembradas.push(JSON.parse(JSON.stringify(serie)));
+                    }
+
+                    for (let serie of response.data.haCosechadas) {
+                        this.chartSeries.haCosechadas.push(JSON.parse(JSON.stringify(serie)));
+                    }
+
+                    this.updateChart();
+                })
+            ;
         },
         updateChart() {
             this.chartOptions.series = JSON.parse(JSON.stringify(this.chartSeries[this.medidas.sembradaCosechada]));
