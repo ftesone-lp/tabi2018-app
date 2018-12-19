@@ -19,7 +19,7 @@ fi
 if [ $command = "run" ]
 then
   npm install
-  npm run dev
+  npm run serve
   exit
 fi
 
