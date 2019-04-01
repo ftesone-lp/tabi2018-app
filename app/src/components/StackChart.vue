@@ -9,10 +9,10 @@
 
 <script>
 import Highcharts from 'highcharts'
-import axios from 'axios'
+import http from '@/services/http'
 
 export default {
-    name: 'Chart',
+    name: 'StackChart',
     props: ['medidas', 'endpoint'],
     data() {
         return {
@@ -21,7 +21,7 @@ export default {
                 haCosechadas: [],
             },
             ultimasMedidas: {
-                sembradaCosechada: this.medidas.sembradaCosechada,
+                sembradaCosechada: this.medidas,
             },
             chartOptions: {
                 colors: [
@@ -78,7 +78,6 @@ export default {
     },
     watch: {
         endpoint: function (newValue) {
-            console.log('new endpoint', newValue);
             this.loadChart();
         },
     },
@@ -90,8 +89,8 @@ export default {
 
         var vue = this;
         window.setInterval( function () {
-            if (vue.medidas.sembradaCosechada != vue.ultimasMedidas.sembradaCosechada) {
-                vue.ultimasMedidas.sembradaCosechada = vue.medidas.sembradaCosechada;
+            if (vue.medidas != vue.ultimasMedidas) {
+                vue.ultimasMedidas = vue.medidas;
                 vue.updateChart();
             }
         }, 500);
@@ -109,30 +108,27 @@ export default {
             }, 500);
         },
         loadChart() {
-            axios
-                .get('http://localhost'+this.endpoint)
-                .then(response => {
-                    var jsonResponse = JSON.parse(JSON.stringify(response.data));
-                    this.chartOptions.xAxis.categories = response.data.x;
+            http.chart(this.endpoint, response => {
+                var jsonResponse = JSON.parse(JSON.stringify(response.data));
+                this.chartOptions.xAxis.categories = response.data.x;
 
-                    this.chartSeries.haSembradas  = [];
-                    this.chartSeries.haCosechadas = [];
+                this.chartSeries.haSembradas  = [];
+                this.chartSeries.haCosechadas = [];
 
-                    for (let serie of response.data.haSembradas) {
-                        this.chartSeries.haSembradas.push(JSON.parse(JSON.stringify(serie)));
-                    }
+                for (let serie of response.data.haSembradas) {
+                    this.chartSeries.haSembradas.push(JSON.parse(JSON.stringify(serie)));
+                }
 
-                    for (let serie of response.data.haCosechadas) {
-                        this.chartSeries.haCosechadas.push(JSON.parse(JSON.stringify(serie)));
-                    }
+                for (let serie of response.data.haCosechadas) {
+                    this.chartSeries.haCosechadas.push(JSON.parse(JSON.stringify(serie)));
+                }
 
-                    this.updateChart();
-                })
-            ;
+                this.updateChart();
+            });
         },
         updateChart() {
-            this.chartOptions.series = JSON.parse(JSON.stringify(this.chartSeries[this.medidas.sembradaCosechada]));
-        }
+            this.chartOptions.series = JSON.parse(JSON.stringify(this.chartSeries[this.medidas]));
+        },
     }
 }
 </script>

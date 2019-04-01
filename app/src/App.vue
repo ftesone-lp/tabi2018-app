@@ -95,8 +95,12 @@
             </q-list>
         </q-layout-drawer>
 
-        <q-page-container>
-            <Chart :medidas="medidas" :endpoint="endpoint" />
+        <q-page-container v-if="!filtros.cultivo">
+            <StackChart :medidas="medidas.sembradaCosechada" :endpoint="endpoint" />
+        </q-page-container>
+
+        <q-page-container v-if="filtros.cultivo">
+            <BarsChart :medidas="medidas.rinde" :endpoint="endpoint" />
         </q-page-container>
 
         <q-layout-footer>
@@ -114,11 +118,20 @@
                     <q-radio color="white" keep-color v-model="medidas.sembradaCosechada" val="haSembradas" label="Superficie Sembrada" />
                     <q-radio color="white" keep-color v-model="medidas.sembradaCosechada" val="haCosechadas" label="Superficie Cosechada" />
                 </div>
-                <div v-if="filtros.cultivo">
-                    <q-checkbox color="white" keep-color v-model="medidas.sembrada" label="Superficie Sembrada" />
-                    <q-checkbox color="white" keep-color v-model="medidas.cosechada" label="Superficie Cosechada" />
-                    <q-checkbox color="white" keep-color v-model="medidas.produccion" label="Producción" />
-                    <q-checkbox color="white" keep-color v-model="medidas.rinde" label="Rinde" />
+                <div v-if="filtros.cultivo" style="display: flex">
+                    <div style="margin: auto;">Rinde:</div>
+                    <div>
+                        <div>
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="1000000" label="kq/m2" />
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="10000" label="q/m2" />
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="1000" label="t/m2" />
+                        </div>
+                        <div>
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="100" label="kg/Ha" />
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="1" label="q/Ha" />
+                            <q-radio color="white" keep-color v-model="medidas.rinde" val="0.1" label="t/Ha" />
+                        </div>
+                    </div>
                 </div>
             </q-toolbar>
         </q-layout-footer>
@@ -126,14 +139,17 @@
 </template>
 
 <script>
-// import http from './services/http'
-import axios from 'axios'
-import Chart from './components/Chart.vue'
+import http from '@/services/http'
+import StackChart from '@/components/StackChart.vue'
+import BarsChart from '@/components/BarsChart.vue'
+
+const host = 'http://localhost:8000'
 
 export default {
     name: 'Agricultura',
     components: {
-        Chart
+        StackChart,
+        BarsChart
     },
     data () {
         return {
@@ -152,30 +168,19 @@ export default {
             },
             medidas: {
                 sembradaCosechada: 'haSembradas',
-                sembrada: true,
-                cosechada: true,
-                produccion: true,
-                rinde: true,
+                rinde: '1',
             },
             endpoint: '/',
         }
     },
     mounted() {
-        axios
-            .get('http://localhost/regiones')
-            .then(response => this.listados.regiones = response.data)
+        http.regiones(response => this.listados.regiones = response.data)
 
-        axios
-            .get('http://localhost/provincias')
-            .then(response => this.listados.provincias = response.data)
+        http.provincias(response => this.listados.provincias = response.data)
 
-        axios
-            .get('http://localhost/cultivos')
-            .then(response => this.listados.cultivos = response.data)
+        http.cultivos(response => this.listados.cultivos = response.data)
 
-        axios
-            .get('http://localhost/decadas')
-            .then(response => this.listados.decadas = response.data)
+        http.decadas(response => this.listados.decadas = response.data)
     },
     methods: {
         filtrarRegion(region) {
@@ -183,18 +188,46 @@ export default {
 
             this.filtros.provincia = null;
 
-            this.endpoint = this.filtros.region ? '/region/'+this.filtros.region.id : '/';
+            this.actualizarEndpoint();
         },
         filtrarProvincia(provincia) {
             this.filtros.provincia = provincia;
 
             this.filtros.region = null;
+
+            this.actualizarEndpoint();
         },
         filtrarCultivo(cultivo) {
             this.filtros.cultivo = cultivo;
+
+            this.actualizarEndpoint();
         },
         filtrarDecada(decada) {
             this.filtros.decada = decada;
+
+            this.actualizarEndpoint();
+        },
+        actualizarEndpoint() {
+            this.medidas.rinde = '1';
+
+            let endpoint   = this.filtros.cultivo ? '/cultivo/'+this.filtros.cultivo.id : '/';
+            let parametros = [];
+
+            if (this.filtros.region) {
+                parametros.push('region='+this.filtros.region.id);
+            } else if (this.filtros.provincia) {
+                parametros.push('provincia='+this.filtros.provincia.id);
+            }
+
+            if (this.filtros.decada) {
+                parametros.push('decada='+this.filtros.decada);
+            }
+
+            if (parametros.length > 0) {
+                endpoint += '?'+parametros.join('&');
+            }
+
+            this.endpoint = endpoint;
         },
     }
 }
