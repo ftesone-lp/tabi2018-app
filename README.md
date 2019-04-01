@@ -5,10 +5,22 @@ tabi2018-app
 
 Para ejecutar el proyecto es necesario tener instalado docker.
 
-Para crear la imagen debe ejecutarse el siguiente comando desde la carpeta raíz del repositorio:
+Para crear la imagen con tag `tabi2018/ftesone-app:latest` debe ejecutarse el siguiente comando desde la carpeta raíz del repositorio:
 
-`docker build docker --tag tabi2018/ftesone-app:latest`
+```bash
+bash ./docker/bin/build.sh
+```
 
-Para ejecutar la aplicación sobre el puerto 8081 de la máquina anfitriona (puede elegirse cualquier puerto):
+Para ejecutar la aplicación sobre el puerto 8080 de la máquina anfitriona:
 
-``docker run -it --rm -p8081:8080 -v `pwd`:/code tabi2018/ftesone-app:latest``
+```bash
+bash ./docker/bin/run.sh
+```
+
+Para ejecutar la aplicación sobre el puerto *PORT* de la máquina anfitriona:
+
+```bash
+bash ./docker/bin/run.sh PORT
+```
+
+Si la aplicación backend se ejecuta en un host distinto a `http://localhost:8000`, es necesario modificar la configuración en *app/src/services/config/index.js*
