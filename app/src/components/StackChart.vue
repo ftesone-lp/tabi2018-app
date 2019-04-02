@@ -13,7 +13,7 @@ import http from '@/services/http'
 
 export default {
     name: 'StackChart',
-    props: ['medidas', 'endpoint'],
+    props: ['medidas', 'endpoint', 'width'],
     data() {
         return {
             chartSeries: {
@@ -79,6 +79,9 @@ export default {
     watch: {
         endpoint: function (newValue) {
             this.loadChart();
+        },
+        width: function (newValue) {
+            this.handleResize();
         },
     },
     mounted() {

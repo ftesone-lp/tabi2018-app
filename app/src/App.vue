@@ -95,12 +95,12 @@
             </q-list>
         </q-layout-drawer>
 
-        <q-page-container v-if="!filtros.cultivo">
-            <StackChart :medidas="medidas.sembradaCosechada" :endpoint="endpoint" />
+        <q-page-container :style="'width: '+chartWidth+'%;'" v-if="!filtros.cultivo">
+            <StackChart :medidas="medidas.sembradaCosechada" :endpoint="endpoint" :width="chartWidth" />
         </q-page-container>
 
-        <q-page-container v-if="filtros.cultivo">
-            <BarsChart :medidas="medidas.rinde" :endpoint="endpoint" />
+        <q-page-container :style="'width: '+chartWidth+'%;'" v-if="filtros.cultivo">
+            <BarsChart :medidas="medidas.rinde" :endpoint="endpoint" :width="chartWidth" />
         </q-page-container>
 
         <q-layout-footer>
@@ -114,6 +114,10 @@
                     CULTIVO: {{ filtros.cultivo ? filtros.cultivo.nombre : 'TODOS' }}<br />
                     DÉCADA: {{ filtros.decada ? filtros.decada : 'TODAS' }}
                 </q-toolbar-title>
+                <div class="chart-width-slider">
+                    Ancho de gráfico:
+                    <q-slider v-model="chartWidth" :min="100" :max="1000" :step="50" snap color="white" />
+                </div>
                 <div v-if="!filtros.cultivo">
                     <q-radio color="white" keep-color v-model="medidas.sembradaCosechada" val="haSembradas" label="Superficie Sembrada" />
                     <q-radio color="white" keep-color v-model="medidas.sembradaCosechada" val="haCosechadas" label="Superficie Cosechada" />
@@ -171,6 +175,14 @@ export default {
                 rinde: '1',
             },
             endpoint: '/',
+            chartWidth: 100,
+        }
+    },
+    watch: {
+        chartWidth: function () {
+            let endpoint = this.endpoint;
+            this.endpoint = '';
+            this.endpoint = endpoint;
         }
     },
     mounted() {
@@ -234,4 +246,9 @@ export default {
 </script>
 
 <style>
+    .chart-width-slider {
+        min-width: 150px;
+        margin: auto 20px;
+        text-align: center;
+    }
 </style>

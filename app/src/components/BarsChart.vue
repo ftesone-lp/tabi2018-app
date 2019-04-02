@@ -13,7 +13,7 @@ import http from '@/services/http'
 
 export default {
     name: 'StackChart',
-    props: ['medidas', 'endpoint'],
+    props: ['medidas', 'endpoint', 'width'],
     data() {
         return {
             rinde: [],
@@ -78,6 +78,9 @@ export default {
         endpoint: function (newValue) {
             this.loadChart();
         },
+        width: function (newValue) {
+            this.handleResize();
+        },
     },
     mounted() {
         window.addEventListener('resize', this.handleResize);
@@ -111,6 +114,9 @@ export default {
                 this.chartOptions.series[2].name = 'Toneladas producción';
                 this.chartOptions.series[3].name = 'Rinde';
             });
+        },
+        updateChart() {
+            this.chartOptions.series = JSON.parse(JSON.stringify(this.chartOptions.series));
         },
     }
 }
