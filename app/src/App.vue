@@ -221,6 +221,7 @@ export default {
         },
         actualizarEndpoint() {
             this.medidas.rinde = '1';
+            this.chartWidth = 100;
 
             let endpoint   = this.filtros.cultivo ? '/cultivo/'+this.filtros.cultivo.id : '/';
             let parametros = [];
